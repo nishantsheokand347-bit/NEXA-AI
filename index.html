@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0914">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NEXA AI">
+  <meta name="description" content="NEXA AI — chat with an AI using Puter.js (Puter account and usage allowance required).">
+  <title>NEXA AI — Chat</title>
+  <style>
+    :root {color-scheme:dark;--bg:#090910;--surface:#121020;--surface2:#1b1830;--line:#2b2544;--muted:#a3a0b7;--text:#f8f7ff;--a:#8e57ff;--b:#bd76ff;--radius:19px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+    body{background:radial-gradient(ellipse at 52% -20%,#311a62 0,transparent 55%),var(--bg)}
+    button,textarea{font:inherit}button{cursor:pointer}button:focus-visible,textarea:focus-visible{outline:2px solid #bb98ff;outline-offset:2px}
+    .app{display:flex;min-height:100dvh;max-width:1150px;margin:0 auto}
+    aside{width:260px;flex:none;border-right:1px solid var(--line);background:#0d0c17cc;display:flex;flex-direction:column;padding:24px 14px}
+    .brand{display:flex;align-items:center;gap:10px;padding:4px 10px 22px;font-size:19px;font-weight:800;letter-spacing:.4px}.mark{width:37px;height:37px;border-radius:12px;background:linear-gradient(140deg,#c37dff,#5932d8);display:grid;place-items:center;box-shadow:0 7px 25px #7b39f466;font-size:20px}
+    .newbtn{width:100%;border:1px solid #5b3f96;background:#241b43;border-radius:13px;color:#f6f2ff;padding:13px 14px;text-align:left;font-weight:650}.newbtn:hover{background:#302057}
+    .sidebar-title{color:#9793ae;text-transform:uppercase;letter-spacing:1px;font-size:11px;font-weight:800;margin:26px 10px 9px}
+    #history{overflow:auto;flex:1}.history-item{border:none;background:transparent;width:100%;text-align:left;color:#cbc6e0;border-radius:10px;padding:11px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-item.active{background:#26203e;color:#fff}.history-item:hover{background:#211b37}
+    .sidefooter{border-top:1px solid var(--line);padding:16px 9px 0;color:#8c88a4;font-size:12px;line-height:1.5}
+    main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100dvh}
+    header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #28243a;padding:17px 26px;min-height:72px;background:#110e1b7a;backdrop-filter:blur(12px)}
+    .topname{font-weight:750;font-size:17px}.subhead{color:#a6a1bb;font-size:12px;margin-top:3px}.tag{background:#2c2048;border:1px solid #533580;color:#d5bcff;border-radius:20px;font-size:11px;padding:6px 10px;font-weight:750;letter-spacing:.4px}
+    #messages{flex:1;overflow:auto;width:100%;padding:22px max(20px,calc((100% - 760px)/2)) 17px;display:flex;flex-direction:column;gap:21px;scroll-behavior:smooth}
+    .welcome{display:flex;flex-direction:column;align-items:center;text-align:center;margin:auto 0;gap:9px;padding:30px 4px}.heroicon{width:82px;height:82px;border-radius:25px;display:grid;place-items:center;background:linear-gradient(140deg,#a45aff,#5728cb);box-shadow:0 0 70px #8745f44d;font-size:41px;margin-bottom:12px}.welcome h1{margin:0;font-size:clamp(26px,5vw,35px);letter-spacing:-.9px}.welcome p{margin:5px 0 17px;color:var(--muted);line-height:1.5;font-size:15px;max-width:380px}.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}.chip{color:#e1d6ff;background:#1b162b;border:1px solid #3c3056;padding:11px 13px;border-radius:13px;font-size:13px}.chip:hover{border-color:#9b69ff}
+    .message{display:flex;align-items:flex-start;gap:12px;line-height:1.58;font-size:15px;max-width:100%}.message.me{justify-content:flex-end}.bubble{padding:13px 16px;border-radius:17px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:min(90%,650px)}.message.me .bubble{background:linear-gradient(120deg,#6e41cf,#8c56f6);color:white;border-bottom-right-radius:5px}.message.bot .bubble{background:#1a1729;border:1px solid #332a4b;border-top-left-radius:5px}.avatar{width:29px;height:29px;flex:none;display:grid;place-items:center;background:#7d4adb;border-radius:9px;font-size:16px;margin-top:2px}
+    .composer{padding:12px max(16px,calc((100% - 760px)/2)) max(19px,env(safe-area-inset-bottom));background:linear-gradient(transparent,#0b0914 20%)}
+    .form{display:flex;align-items:flex-end;gap:10px;padding:11px;background:#201a31;border:1px solid #514267;border-radius:19px;box-shadow:0 12px 40px #0006}textarea{border:0;resize:none;background:transparent;color:#fff;outline:0;width:100%;min-height:29px;max-height:140px;padding:6px 4px;line-height:1.4;font-size:15px}textarea::placeholder{color:#a6a0b8}
+    .send{width:42px;height:42px;flex:none;border:0;border-radius:12px;color:white;background:linear-gradient(145deg,#a76aff,#6c38db);font-size:21px}.send:disabled{background:#51446e;color:#a8a0ba;cursor:default}.fineprint{text-align:center;margin-top:10px;color:#8a829d;font-size:11px}
+    .bubble.error{border-color:#6f3c46;color:#ffc0c8} .mobile-brand{display:none}.iconbtn{display:none;background:#251d3b;color:white;border:1px solid #4b3b6b;border-radius:9px;padding:7px 11px;font-size:19px}
+    @media(max-width:720px){aside{position:fixed;z-index:4;top:0;bottom:0;left:0;transform:translateX(-102%);transition:transform .2s;width:min(295px,83vw);box-shadow:10px 0 35px #0008}aside.open{transform:translateX(0)}.shade{display:none;position:fixed;inset:0;background:#0009;z-index:3}.shade.show{display:block}.mobile-brand{display:block}.iconbtn{display:inline-block}header{padding:13px 16px;min-height:65px}#messages{padding:23px 17px}.composer{padding:10px 13px max(13px,env(safe-area-inset-bottom))}.welcome{padding-top:15px}.welcome p{font-size:14px}.chip{font-size:12px}.bubble{max-width:93%}}
+  </style>
+</head>
+<body>
+<div class="shade" id="shade"></div>
+<div class="app">
+  <aside id="sidebar" aria-label="Chat history">
+    <div class="brand"><span class="mark">✦</span> NEXA AI</div>
+    <button class="newbtn" id="newChat">＋ &nbsp; New Chat</button>
+    <div class="sidebar-title">Your chats</div>
+    <nav id="history" aria-label="Previous chats"></nav>
+    <div class="sidefooter">Powered by Puter.js · Sign in to chat. Free usage is limited. Chats are stored on this device.</div>
+  </aside>
+  <main>
+    <header><div style="display:flex;align-items:center;gap:12px"><button class="iconbtn" id="menu" aria-label="Open menu">☰</button><div><div class="topname">NEXA AI <span class="mobile-brand" style="display:inline;font-weight:400;font-size:13px;color:#bba4df">✦</span></div><div class="subhead">Your smart assistant · Live AI</div></div></div><span class="tag">LIVE AI READY*</span></header>
+    <section id="messages" aria-live="polite" aria-label="Conversation"></section>
+    <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="fineprint">* Live AI requires internet and Puter sign-in. Free monthly allowance is limited.</div></div>
+  </main>
+</div>
+<script src="https://js.puter.com/v2/"></script>
+<script>
+(()=>{
+  'use strict';
+  const KEY='nexa-ai-live-v1';
+  const el=id=>document.getElementById(id);
+  let chats=[], active=null, busy=false;
+  try { const saved=JSON.parse(localStorage.getItem(KEY));
+    if (Array.isArray(saved)) chats=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,30);
+  } catch (_) {}
+  const persist=()=>{try { localStorage.setItem(KEY,JSON.stringify(chats)); } catch (_) {}};
+  const current=()=>chats.find(c=>c.id===active);
+  const closeMenu=()=>{el('sidebar').classList.remove('open');el('shade').classList.remove('show')};
+  const fresh=()=>{
+    const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),title:'New Chat',messages:[]};
+    chats.unshift(c);active=c.id;persist();render();closeMenu();el('prompt').focus();
+  };
+  const renderHistory=()=>{
+    const h=el('history');h.replaceChildren();
+    for(const c of chats){
+      const b=document.createElement('button');
+      b.className='history-item'+(c.id===active?' active':'');
+      b.textContent='◌  '+c.title;b.title=c.title;
+      b.onclick=()=>{active=c.id;persist();render();closeMenu()};h.appendChild(b);
+    }
+  };
+  const render=()=>{
+    renderHistory();const root=el('messages');root.replaceChildren();const chat=current();
+    if(!chat||!chat.messages.length){
+      const w=document.createElement('div');w.className='welcome';
+      w.innerHTML='<div class="heroicon">✦</div><h1>Meet NEXA AI</h1><p>Ask anything in Hindi or English. Sign in with Puter when prompted to get real AI responses.</p><div class="chips"></div>';
+      const chips=w.querySelector('.chips');
+      for(const label of ['Namaste! Kaise ho?','Mujhe ek kahani sunao','Explain photosynthesis simply']){
+        const b=document.createElement('button');b.className='chip';b.textContent=label;b.onclick=()=>send(label);chips.appendChild(b);
+      }root.appendChild(w);
+    }else{
+      for(const m of chat.messages){
+        const wrap=document.createElement('div');wrap.className='message '+(m.role==='user'?'me':'bot');
+        if(m.role!=='user'){const a=document.createElement('div');a.className='avatar';a.textContent='✦';wrap.appendChild(a)}
+        const b=document.createElement('div');b.className='bubble'+(m.error?' error':'');b.textContent=m.text;wrap.appendChild(b);root.appendChild(wrap);
+      }
+    }
+    root.scrollTop=root.scrollHeight;
+  };
+  const extractText=result=>{
+    if(typeof result==='string')return result;
+    const content=result?.message?.content;
+    if(typeof content==='string')return content;
+    if(Array.isArray(content))return content.filter(x=>x?.type==='text'&&typeof x.text==='string').map(x=>x.text).join('\n');
+    if(typeof result?.text==='string')return result.text;
+    return '';
+  };
+  async function send(value){
+    const t=String(value||'').trim().slice(0,2000);if(!t||busy)return;
+    if(!current())fresh();const chat=current();
+    const previous=chat.messages.filter(m=>m.role==='user'||(m.role==='assistant'&&!m.error&&!m.pending));
+    chat.messages.push({role:'user',text:t});
+    if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=t.length>32?t.slice(0,32)+'…':t;
+    const placeholder={role:'assistant',text:'Soch raha hoon…',pending:true};chat.messages.push(placeholder);
+    chats=[chat,...chats.filter(c=>c.id!==chat.id)];busy=true;el('send').disabled=true;el('prompt').value='';persist();render();
+    try{
+      if(location.protocol==='file:')throw new Error('Is file ko seedha Files app se nahi chala sakte. Pehle GitHub Pages par upload karke website URL kholo.');
+      if(!window.puter?.ai?.chat)throw new Error('Puter.js load nahi hua. Internet connection check karke reload karo.');
+      // A direct action from the Send button may trigger Puter account sign-in.
+      // On Puter.js, a free monthly usage allowance belongs to each signed-in user.
+      const context=[{role:'system',content:'You are NEXA AI, a helpful, friendly and safe assistant. Answer the user in their language (Hindi, Hinglish, or English), clearly and concisely. If you do not know a fact, say so. Never claim you have live information if you do not.'}];
+      for(const m of previous.slice(-12))context.push({role:m.role,content:m.text});
+      context.push({role:'user',content:t});
+      const result=await window.puter.ai.chat(context,{model:'gpt-5.4-nano',normalize:true,max_tokens:750});
+      const reply=extractText(result).trim();
+      if(!reply)throw new Error('AI se text reply nahi mila. Dobara try karo.');
+      placeholder.text=reply;delete placeholder.pending;
+    }catch(err){
+      console.error('NEXA AI request failed',err);
+      placeholder.error=true;delete placeholder.pending;
+      const msg=String(err?.message||err||'Unknown error');
+      if(/insufficient|credit|fund|quota|subscription|402|upgrade/i.test(msg))
+        placeholder.text='Puter ka free AI allowance poora ho sakta hai. Paid plan mat lena; free allowance renew hone par dobara try kar sakte ho.';
+      else if(/blocked|popup|sign.in|auth|login|permission/i.test(msg))
+        placeholder.text='Puter sign-in complete karo, popup allow karo aur phir dobara message bhejo. Details: '+msg.slice(0,220);
+      else placeholder.text='Abhi reply nahi aa paya. '+msg.slice(0,260);
+    }finally{
+      busy=false;el('send').disabled=false;persist();if(current()?.id===chat.id)render();
+    }
+  }
+  el('newChat').addEventListener('click',fresh);
+  el('menu').onclick=()=>{el('sidebar').classList.add('open');el('shade').classList.add('show')};
+  el('shade').onclick=closeMenu;
+  el('chatForm').addEventListener('submit',e=>{e.preventDefault();send(el('prompt').value)});
+  el('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(e.target.value)}});
+  if(chats.length)active=chats[0].id;else fresh();render();
+})();
+</script>
+</body>
+</html>
