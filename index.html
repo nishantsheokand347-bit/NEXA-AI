@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NEXA AI">
-  <meta name="description" content="NEXA AI — Smart Mic hands-free voice conversations in Hindi and English.">
-  <title>NEXA AI — Aurora Edition · Image Studio</title>
+  <meta name="description" content="NEXA AI — Smart Chat History, Voice AI and Image Studio.">
+  <title>NEXA AI — Aurora · Image Studio · Smart History</title>
   <link rel="icon" type="image/png" href="./apple-touch-icon.png?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=3">
   <style>
-/* NEXA AI • Aurora Edition — premium single-file visual refresh */
+/* NEXA AI • Aurora Edition + Smart History v3: preserves original storage key and chat/voice/image features */
 :root{
   color-scheme:dark;
   --bg:#080911;--panel:#10111d;--panel-2:#171726;
@@ -223,6 +223,52 @@ textarea:focus-visible{outline:0}
 @media (max-width:720px){#imageStudioTop{width:36px;height:35px;padding:0;border-radius:12px;font-size:18px}#imageStudioTop .img-label{display:none}.img-studio-shade{padding:0}.img-studio{width:100vw;height:100dvh;max-height:none;border-radius:0;border:0}.img-studio-content{padding:16px 16px max(22px,env(safe-area-inset-bottom))}.img-studio-header{padding:19px 17px 13px}}
 @media (max-width:370px){#imageStudioTop{width:30px;height:32px;font-size:16px}.header-right{gap:5px}.voice-toggle{font-size:9px}.img-studio-header h2{font-size:18px}}
 
+
+/* NEXA AI Smart History v3 — design-only sidebar additions */
+.history-search-wrap{display:flex;align-items:center;gap:9px;margin:16px 3px 10px;padding:11px 13px;border:1px solid rgba(179,146,255,.26);background:rgba(13,12,27,.55);border-radius:13px;color:#ad9bbf}
+.history-search-wrap:focus-within{border-color:#b68cff;box-shadow:0 0 0 3px rgba(151,104,240,.12)}
+#historySearch{min-width:0;flex:1;border:0;outline:none;background:transparent;color:#f6f0ff;font-size:13px}
+#historySearch::placeholder{color:#88819b}
+.history-tabs{display:flex;gap:5px;margin:3px 2px 0;padding:4px;border-radius:12px;background:rgba(110,87,162,.10)}
+.history-tab{flex:1;border:0;border-radius:9px;min-height:32px;background:transparent;color:#918aa8;font-size:12px;font-weight:700}
+.history-tab.active{background:rgba(153,105,250,.25);color:#f7ecff;box-shadow:inset 0 0 0 1px rgba(180,140,255,.16)}
+.history-summary{display:flex;justify-content:space-between;align-items:center;padding:19px 10px 8px}
+.history-summary .sidebar-title{padding:0}
+.history-count{font-size:10px;color:#9789b0;background:rgba(142,103,220,.12);border:1px solid rgba(180,149,240,.17);padding:4px 8px;border-radius:100px}
+.history-row{display:flex;align-items:center;gap:3px;margin:0 0 7px;padding:4px;border:1px solid transparent;border-radius:15px;background:rgba(106,77,173,.035)}
+.history-row:hover{background:rgba(153,105,240,.11)}
+.history-row.active{background:linear-gradient(90deg,rgba(137,86,238,.26),rgba(84,53,160,.10));border-color:rgba(184,149,255,.25)}
+.history-row .history-item{border:0;background:transparent!important;min-width:0;flex:1;margin:0;padding:10px 6px 10px 9px;display:flex;gap:9px;align-items:center;white-space:normal}
+.history-row .history-mini-icon{flex:none;color:#cdb6fa;font-size:16px;opacity:.8}
+.history-row .history-copy{min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left}
+.history-row .history-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:100%;font-weight:680;font-size:12px;color:#ded9f2}
+.history-row.active .history-title{color:#fff}
+.history-row .history-sub{font-size:10px;color:#8f86a4;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}
+.history-more{min-width:33px;height:37px;display:grid;place-items:center;border:1px solid transparent;border-radius:10px;background:transparent;color:#b9a5d6;font-size:21px}
+.history-more:hover,.history-more:focus-visible{background:rgba(157,112,235,.18);border-color:rgba(198,162,255,.25)}
+.history-empty{font-size:12px;color:#a8a0b9;text-align:center;line-height:1.6;padding:35px 12px}
+.history-empty span{font-size:25px;display:block;margin-bottom:5px}
+.history-footer-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px;border-top:1px solid var(--line);padding:12px 0 1px;margin-top:12px}
+.history-tools-btn{border:1px solid rgba(170,139,240,.22);background:rgba(129,95,208,.10);color:#d9c8f6;border-radius:11px;padding:10px 7px;font-size:11px;font-weight:690;min-height:39px}
+.history-tools-btn:hover{background:rgba(132,87,218,.2)}
+.history-tools-btn.danger{grid-column:1/-1;color:#ffbacd;border-color:rgba(255,145,185,.2)}
+#historyNotice{display:none;font-size:11px;line-height:1.5;margin:7px 2px 0;padding:9px 10px;border:1px solid rgba(223,170,255,.22);border-radius:10px;background:#21152e;color:#e1bdf2}
+#historyNotice.visible{display:block}
+.history-sheet-backdrop{display:none;position:fixed;inset:0;z-index:32;align-items:center;justify-content:center;padding:18px;background:rgba(3,2,11,.76);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.history-sheet-backdrop.open{display:flex}
+.history-sheet{width:min(100%,430px);max-height:92dvh;overflow:auto;border:1px solid rgba(190,157,250,.31);border-radius:22px;background:linear-gradient(155deg,#211735,#101021 75%);box-shadow:0 25px 90px rgba(0,0,0,.5);padding:19px}
+.history-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.history-sheet h2{font-size:18px;margin:0;color:#fff}
+.history-sheet-x{background:rgba(156,105,220,.15);border:1px solid rgba(173,137,240,.3);border-radius:11px;color:#eee0ff;width:35px;height:35px;font-size:18px}
+.history-sheet p{font-size:12px;color:#b4a8ca;line-height:1.55;overflow-wrap:anywhere;margin:9px 0 17px}
+.history-sheet label{color:#d1bfeb;font-size:11px;font-weight:720;display:block;margin-bottom:6px}
+#historyRenameInput{display:block;width:100%;border:1px solid rgba(190,156,255,.4);background:#130e24;color:#fff;outline:none;padding:12px;border-radius:12px;font-size:15px;margin-bottom:14px}
+.history-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.history-sheet-actions button{background:rgba(130,91,199,.17);border:1px solid rgba(185,150,250,.28);border-radius:12px;padding:12px 8px;min-height:43px;color:#ede1ff;font-size:12px;font-weight:690}
+.history-sheet-actions button.primary{background:linear-gradient(120deg,#965cf3,#6a45c7);color:#fff}
+.history-sheet-actions button.danger{border-color:rgba(246,124,160,.30);color:#ffc6d1}
+@media(max-width:720px){.history-sheet-backdrop{align-items:flex-end;padding:0}.history-sheet{width:100%;max-height:88dvh;border-radius:23px 23px 0 0;padding:20px 17px max(20px,env(safe-area-inset-bottom))}}
+
   </style>
 </head>
 <body>
@@ -232,15 +278,36 @@ textarea:focus-visible{outline:0}
     <div class="brand"><span class="mark">✦</span><span>NEXA AI<small>Smart assistant</small></span></div>
     <button class="newbtn" id="newChat">＋ &nbsp; New Chat</button>
     <button type="button" class="img-launch" id="imageStudioSidebar">🎨 &nbsp; AI Image Studio</button>
-    <div class="sidebar-title">Your chats</div>
+    <label class="history-search-wrap" for="historySearch"><span aria-hidden="true">⌕</span><input type="search" id="historySearch" placeholder="Search your chats..." autocomplete="off" aria-label="Search chats"></label>
+    <div class="history-tabs" role="group" aria-label="Filter chat history"><button type="button" id="historyAll" class="history-tab active" aria-pressed="true">All chats</button><button type="button" id="historyPinned" class="history-tab" aria-pressed="false">★ Pinned</button></div>
+    <div class="history-summary"><div class="sidebar-title">Chat history</div><span id="historyCount" class="history-count">0 chats</span></div>
     <nav id="history" aria-label="Previous chats"></nav>
-    <div class="sidefooter">Powered by Puter.js · Sign in to chat. Free usage is limited. Chats are stored on this device.</div>
+    <div id="historyNotice" role="status" aria-live="polite"></div>
+    <div class="history-footer-tools"><button class="history-tools-btn" id="exportHistory" type="button">↓ Backup chats</button><button class="history-tools-btn" id="importHistory" type="button">↥ Restore backup</button><button class="history-tools-btn danger" id="clearHistory" type="button">⌫ Delete all chats</button></div>
+    <input id="historyImportFile" type="file" accept=".json,application/json" hidden aria-label="Choose NEXA AI backup">
+    <div class="sidefooter">🔒 Chats are saved locally on this browser, not synced across devices. Download a backup before clearing Safari data.</div>
   </aside>
   <main>
     <header><div class="header-left"><button class="iconbtn" id="menu" aria-label="Open menu">☰</button><div class="header-mark" aria-hidden="true">✦</div><div><div class="topname">NEXA AI <span class="spark">✧</span></div><div class="subhead"><span class="status-dot" aria-hidden="true"></span> Your intelligent companion</div></div></div><div class="header-right"><button id="imageStudioTop" class="img-launch" type="button" aria-label="Open AI Image Studio" title="AI Image Studio">🎨 <span class="img-label">Create</span></button><span class="header-pill">AURORA EDITION</span><button class="voice-toggle" id="autoVoice" type="button" aria-pressed="false" title="Speak AI replies automatically">🔈 Voice OFF</button></div></header>
     <section id="messages" aria-live="polite" aria-label="Conversation"></section>
     <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="micbtn" id="voiceMic" type="button" aria-label="Record voice message" title="Tap, speak, tap again to stop">🎙️</button><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="voice-options"><label for="voiceLang">🎙️ Language:</label><select id="voiceLang" aria-label="Voice input language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select><button type="button" id="handsFree" class="handsfree-btn" aria-pressed="false" title="Start smart hands-free voice conversation">🎙️ Smart Mic START</button><span id="voiceStatus" role="status" aria-live="polite">🎙️ Smart Mic START dabao → bolo → NEXA bolegi → phir sunegi.</span></div><div class="fineprint">Smart Mic v2: Start → bolo → AI reply → dobara sunne ki koshish. iPhone par browser ke restrictions ki wajah se kabhi Tap to Resume karna padega. Audio Puter ko bheja jata hai; free usage limited hai.</div></div>
   </main>
+</div>
+
+
+<div id="historySheetBackdrop" class="history-sheet-backdrop" role="presentation">
+  <section id="historySheet" class="history-sheet" role="dialog" aria-modal="true" aria-labelledby="historySheetTitle">
+    <div class="history-sheet-head"><h2 id="historySheetTitle">Chat options</h2><button id="historySheetClose" class="history-sheet-x" type="button" aria-label="Close options">×</button></div>
+    <p id="historySheetInfo">Rename, pin, export or delete this conversation.</p>
+    <label for="historyRenameInput">Chat name</label>
+    <input id="historyRenameInput" maxlength="80" autocomplete="off" placeholder="Chat title">
+    <div class="history-sheet-actions">
+      <button id="historyRenameButton" class="primary" type="button">✎ Save name</button>
+      <button id="historyPinButton" type="button">☆ Pin chat</button>
+      <button id="historyExportOne" type="button">↓ Export .txt</button>
+      <button id="historyDeleteOne" class="danger" type="button">⌫ Delete chat</button>
+    </div>
+  </section>
 </div>
 
 <div class="img-studio-shade" id="imageStudioShade" role="presentation">
@@ -585,24 +652,149 @@ textarea:focus-visible{outline:0}
       console.warn('NEXA microphone error',error);
     }finally{preparingMic=false;}
   }
-  try { const saved=JSON.parse(localStorage.getItem(KEY));
-    if (Array.isArray(saved)) chats=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,30);
-  } catch (_) {}
-  const persist=()=>{try { localStorage.setItem(KEY,JSON.stringify(chats)); } catch (_) {}};
+  // Smart Chat History v3: backwards compatible with existing local chat storage.
+  const SELECTED_KEY='nexa-ai-active-chat-v1';
+  let historyFilter='all', sheetChatId=null;
+  const safeTime=(value,fallback)=>Number.isFinite(Number(value)) && Number(value)>0?Number(value):fallback;
+  const cleanChat=(raw,i=0)=>{
+    if(!raw || typeof raw.id!=='string' || !Array.isArray(raw.messages))return null;
+    const safeMessages=raw.messages.filter(m=>m && ['user','assistant'].includes(m.role) && typeof m.text==='string').map(m=>({role:m.role,text:m.text.slice(0,30000),...(m.error?{error:true}:{}),...(m.pending?{pending:true}:{})}));
+    const fallback=Date.now()-i*60000;
+    return {id:raw.id.slice(0,110),title:(typeof raw.title==='string' && raw.title.trim()?raw.title.trim().slice(0,80):'New Chat'),messages:safeMessages,pinned:raw.pinned===true,createdAt:safeTime(raw.createdAt,fallback),updatedAt:safeTime(raw.updatedAt,fallback)};
+  };
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(Array.isArray(saved))chats=saved.map(cleanChat).filter(Boolean);
+  }catch(err){console.warn('NEXA chat history read unavailable',err)}
+  const noticeHistory=(message)=>{
+    const box=el('historyNotice');box.textContent=message;box.classList.add('visible');
+  };
+  const persist=()=>{
+    try{localStorage.setItem(KEY,JSON.stringify(chats));localStorage.setItem(SELECTED_KEY,active||'');return true;}
+    catch(err){console.warn('Chat history not saved',err);noticeHistory('⚠️ Storage full/blocked. Chats may not be saved. Download a backup.');return false;}
+  };
   const current=()=>chats.find(c=>c.id===active);
   const closeMenu=()=>{el('sidebar').classList.remove('open');el('shade').classList.remove('show')};
+  const sortedChats=()=>chats.slice().sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||(b.updatedAt||0)-(a.updatedAt||0));
+  const dateLabel=ts=>{
+    if(!ts)return '';
+    const date=new Date(ts),today=new Date();
+    if(date.toDateString()===today.toDateString())return 'Today';
+    const yesterday=new Date();yesterday.setDate(today.getDate()-1);
+    if(date.toDateString()===yesterday.toDateString())return 'Yesterday';
+    return date.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  };
   const fresh=()=>{
-    const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),title:'New Chat',messages:[]};
+    const now=Date.now();
+    const c={id:now.toString(36)+Math.random().toString(36).slice(2,8),title:'New Chat',messages:[],pinned:false,createdAt:now,updatedAt:now};
     chats.unshift(c);active=c.id;persist();render();closeMenu();el('prompt').focus();
   };
   const renderHistory=()=>{
     const h=el('history');h.replaceChildren();
-    for(const c of chats){
-      const b=document.createElement('button');
-      b.className='history-item'+(c.id===active?' active':'');
-      b.textContent='◌  '+c.title;b.title=c.title;
-      b.onclick=()=>{active=c.id;persist();render();closeMenu()};h.appendChild(b);
+    const query=el('historySearch').value.trim().toLocaleLowerCase();
+    const list=sortedChats().filter(c=>(historyFilter!=='pinned'||c.pinned)&&(!query||(c.title+' '+c.messages.map(m=>m.text).join(' ')).toLocaleLowerCase().includes(query)));
+    const allCount=chats.length;
+    el('historyCount').textContent=allCount+' '+(allCount===1?'chat':'chats');
+    el('historyAll').classList.toggle('active',historyFilter==='all');
+    el('historyAll').setAttribute('aria-pressed',String(historyFilter==='all'));
+    el('historyPinned').classList.toggle('active',historyFilter==='pinned');
+    el('historyPinned').setAttribute('aria-pressed',String(historyFilter==='pinned'));
+    if(!list.length){const empty=document.createElement('div');empty.className='history-empty';empty.innerHTML='<span>✧</span>No chats found.<br>Try another search or start a new chat.';h.appendChild(empty);return;}
+    for(const c of list){
+      const row=document.createElement('div');row.className='history-row'+(c.id===active?' active':'');
+      const b=document.createElement('button');b.type='button';b.className='history-item';b.title=c.title;
+      const symbol=document.createElement('span');symbol.className='history-mini-icon';symbol.textContent=c.pinned?'★':'✧';
+      const copy=document.createElement('span');copy.className='history-copy';
+      const name=document.createElement('span');name.className='history-title';name.textContent=c.title;
+      const sub=document.createElement('span');sub.className='history-sub';
+      const total=c.messages.filter(m=>m.role==='user').length;
+      sub.textContent=dateLabel(c.updatedAt)+' · '+total+' '+(total===1?'message':'messages');
+      copy.append(name,sub);b.append(symbol,copy);
+      b.onclick=()=>{if(handsfree)stopHandsFree();stopSpeaking();active=c.id;persist();render();closeMenu()};
+      const more=document.createElement('button');more.type='button';more.className='history-more';more.textContent='⋯';more.setAttribute('aria-label','Options for '+c.title);
+      more.onclick=()=>openHistorySheet(c.id);
+      row.append(b,more);h.appendChild(row);
     }
+  };
+  const closeHistorySheet=()=>{el('historySheetBackdrop').classList.remove('open');sheetChatId=null};
+  const openHistorySheet=(id)=>{
+    const c=chats.find(x=>x.id===id);if(!c)return;
+    sheetChatId=id;el('historySheetTitle').textContent='Chat options';el('historySheetInfo').textContent='Choose what to do with this conversation.';
+    el('historyRenameInput').value=c.title;
+    el('historyPinButton').textContent=c.pinned?'★ Unpin chat':'☆ Pin chat';
+    el('historySheetBackdrop').classList.add('open');
+  };
+  const downloadText=(filename,text,mime)=>{
+    const blob=new Blob([text],{type:mime});const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),20000);
+  };
+  const exportOne=(c)=>{
+    const lines=['NEXA AI · '+c.title,'Exported: '+new Date().toLocaleString('en-IN'),''];
+    for(const m of c.messages){if(m.pending)continue;lines.push((m.role==='user'?'You':'NEXA AI')+': '+m.text,'');}
+    downloadText('NEXA-AI-Chat-'+new Date().toISOString().slice(0,10)+'.txt',lines.join('\n'),'text/plain;charset=utf-8');
+  };
+  const exportAll=()=>{
+    const backup={format:'nexa-ai-chat-backup',version:1,exportedAt:new Date().toISOString(),chats:chats.map(c=>({...c,messages:c.messages.filter(m=>!m.pending)}))};
+    downloadText('NEXA-AI-Chats-Backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(backup,null,2),'application/json;charset=utf-8');
+    noticeHistory('✅ Backup downloaded. Save it safely in Files or iCloud Drive.');
+  };
+  const makeChange=(fn)=>{fn();persist();renderHistory();};
+  el('historySearch').addEventListener('input',renderHistory);
+  el('historyAll').onclick=()=>{historyFilter='all';renderHistory()};
+  el('historyPinned').onclick=()=>{historyFilter='pinned';renderHistory()};
+  el('historySheetClose').onclick=closeHistorySheet;
+  el('historySheetBackdrop').onclick=e=>{if(e.target===el('historySheetBackdrop'))closeHistorySheet()};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHistorySheet()});
+  el('historyRenameInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el('historyRenameButton').click()}});
+  el('historyRenameButton').onclick=()=>{
+    const c=chats.find(x=>x.id===sheetChatId);if(!c)return;
+    const name=el('historyRenameInput').value.trim().slice(0,80);
+    if(!name){el('historySheetInfo').textContent='Please enter a chat name.';return;}
+    makeChange(()=>{c.title=name});closeHistorySheet();
+  };
+  el('historyPinButton').onclick=()=>{
+    const c=chats.find(x=>x.id===sheetChatId);if(!c)return;
+    makeChange(()=>{c.pinned=!c.pinned});closeHistorySheet();
+  };
+  el('historyExportOne').onclick=()=>{
+    const c=chats.find(x=>x.id===sheetChatId);if(!c)return;exportOne(c);closeHistorySheet();
+  };
+  el('historyDeleteOne').onclick=()=>{
+    const c=chats.find(x=>x.id===sheetChatId);if(!c)return;
+    if(busy){el('historySheetInfo').textContent='Current reply finish hone do, then delete.';return;}
+    if(!confirm('Delete “'+c.title+'”? This cannot be undone unless you have a backup.'))return;
+    if(handsfree)stopHandsFree();stopSpeaking();
+    chats=chats.filter(x=>x.id!==c.id);
+    if(active===c.id)active=sortedChats()[0]?.id||null;
+    closeHistorySheet();
+    if(!chats.length)fresh();else{persist();render();}
+  };
+  el('exportHistory').onclick=exportAll;
+  el('importHistory').onclick=()=>el('historyImportFile').click();
+  el('historyImportFile').addEventListener('change',async e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    e.target.value='';
+    if(file.size>8*1024*1024){noticeHistory('Backup file too large (8MB limit).');return;}
+    if(busy){noticeHistory('Finish the current AI reply before restoring history.');return;}
+    try{
+      const backup=JSON.parse(await file.text());
+      if(backup?.format!=='nexa-ai-chat-backup'||!Array.isArray(backup.chats))throw new Error('Not a NEXA AI chat backup.');
+      const imported=backup.chats.slice(0,500).map(cleanChat).filter(Boolean);
+      if(!imported.length)throw new Error('No valid chats found in the backup.');
+      const existing=new Set(chats.map(c=>c.id));const incoming=imported.filter(c=>!existing.has(c.id));
+      if(!incoming.length){noticeHistory('All chats from this backup already exist.');return;}
+      if(!confirm('Restore '+incoming.length+' chats? Existing chats will be kept.'))return;
+      const previous=chats.slice(), oldActive=active;
+      chats=[...incoming,...chats];active=incoming[0].id;
+      if(!persist()){chats=previous;active=oldActive;noticeHistory('Storage full. Restore cancelled; existing chats are safe.');return;}
+      historyFilter='all';el('historySearch').value='';render();noticeHistory('✅ Restored '+incoming.length+' chats. Existing chats were kept.');
+    }catch(err){noticeHistory('⚠️ '+String(err?.message||'Unable to read backup').slice(0,150))}
+  });
+  el('clearHistory').onclick=()=>{
+    if(busy){noticeHistory('Finish the current AI reply before clearing history.');return;}
+    if(!confirm('Delete ALL '+chats.length+' chats from this browser? Download a backup first. This cannot be undone.'))return;
+    if(handsfree)stopHandsFree();stopSpeaking();chats=[];active=null;fresh();noticeHistory('Old chats deleted. A new empty chat is ready.');
   };
   const render=()=>{
     renderHistory();const root=el('messages');root.replaceChildren();const chat=current();
@@ -647,6 +839,7 @@ textarea:focus-visible{outline:0}
     if(!current())fresh();const chat=current();
     const previous=chat.messages.filter(m=>m.role==='user'||(m.role==='assistant'&&!m.error&&!m.pending));
     chat.messages.push({role:'user',text:t});
+    chat.updatedAt=Date.now();
     if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=t.length>32?t.slice(0,32)+'…':t;
     const placeholder={role:'assistant',text:'Soch raha hoon…',pending:true};chat.messages.push(placeholder);
     chats=[chat,...chats.filter(c=>c.id!==chat.id)];busy=true;el('send').disabled=true;el('prompt').value='';persist();render();
@@ -661,7 +854,7 @@ textarea:focus-visible{outline:0}
       const result=await window.puter.ai.chat(context,{model:'gpt-5.4-nano',normalize:true,max_tokens:750});
       const reply=extractText(result).trim();
       if(!reply)throw new Error('AI se text reply nahi mila. Dobara try karo.');
-      placeholder.text=reply;delete placeholder.pending;
+      placeholder.text=reply;delete placeholder.pending;chat.updatedAt=Date.now();
       // Auto speech on a voice-initiated message or when Voice ON is enabled.
       // On some iPhones audio after an async response may require a second tap;
       // the speaker button on every answer is the reliable fallback.
@@ -671,7 +864,7 @@ textarea:focus-visible{outline:0}
     }catch(err){
       console.error('NEXA AI request failed',err);
       if(handsfree)stopHandsFree();
-      placeholder.error=true;delete placeholder.pending;
+      placeholder.error=true;delete placeholder.pending;chat.updatedAt=Date.now();
       const msg=String(err?.message||err||'Unknown error');
       if(/insufficient|credit|fund|quota|subscription|402|upgrade/i.test(msg))
         placeholder.text='Puter ka free AI allowance poora ho sakta hai. Paid plan mat lena; free allowance renew hone par dobara try kar sakte ho.';
@@ -709,7 +902,9 @@ textarea:focus-visible{outline:0}
   el('shade').onclick=closeMenu;
   el('chatForm').addEventListener('submit',e=>{e.preventDefault();send(el('prompt').value)});
   el('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(e.target.value)}});
-  if(chats.length)active=chats[0].id;else fresh();render();
+  try{const last=localStorage.getItem(SELECTED_KEY);if(chats.some(c=>c.id===last))active=last;}catch(_){}
+  if(!active && chats.length)active=sortedChats()[0].id;
+  if(!active)fresh();else render();
 })();
 </script>
 
