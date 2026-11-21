@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NEXA AI">
   <meta name="description" content="NEXA AI — Smart Mic hands-free voice conversations in Hindi and English.">
-  <title>NEXA AI — Smart Mic</title>
+  <title>NEXA AI — Smart Mic v2</title>
   <style>
     :root {color-scheme:dark;--bg:#090910;--surface:#121020;--surface2:#1b1830;--line:#2b2544;--muted:#a3a0b7;--text:#f8f7ff;--a:#8e57ff;--b:#bd76ff;--radius:19px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
@@ -64,9 +64,9 @@
     <div class="sidefooter">Powered by Puter.js · Sign in to chat. Free usage is limited. Chats are stored on this device.</div>
   </aside>
   <main>
-    <header><div style="display:flex;align-items:center;gap:12px"><button class="iconbtn" id="menu" aria-label="Open menu">☰</button><div><div class="topname">NEXA AI <span class="mobile-brand" style="display:inline;font-weight:400;font-size:13px;color:#bba4df">✦</span></div><div class="subhead">Your smart assistant · Live AI</div></div></div><button class="voice-toggle" id="autoVoice" type="button" aria-pressed="false" title="Speak AI replies automatically">🔈 Voice OFF</button></header>
+    <header><div style="display:flex;align-items:center;gap:12px"><button class="iconbtn" id="menu" aria-label="Open menu">☰</button><div><div class="topname">NEXA AI <span class="mobile-brand" style="display:inline;font-weight:400;font-size:13px;color:#bba4df">✦</span></div><div class="subhead">Your smart assistant · Smart Mic v2</div></div></div><button class="voice-toggle" id="autoVoice" type="button" aria-pressed="false" title="Speak AI replies automatically">🔈 Voice OFF</button></header>
     <section id="messages" aria-live="polite" aria-label="Conversation"></section>
-    <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="micbtn" id="voiceMic" type="button" aria-label="Record voice message" title="Tap, speak, tap again to stop">🎙️</button><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="voice-options"><label for="voiceLang">🎙️ Language:</label><select id="voiceLang" aria-label="Voice input language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select><button type="button" id="handsFree" class="handsfree-btn" aria-pressed="false" title="Start smart hands-free voice conversation">🎙️ Smart Mic START</button><span id="voiceStatus" role="status" aria-live="polite">🎙️ Smart Mic START dabao → bolo → NEXA bolegi → phir sunegi.</span></div><div class="fineprint">Smart Mic: ek tap se voice conversation shuru karo, STOP se band karo. Mic audio aur replies Puter ko bheje jaate hain. Free usage limited hai; iPhone kabhi auto-resume rok sakta hai.</div></div>
+    <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="micbtn" id="voiceMic" type="button" aria-label="Record voice message" title="Tap, speak, tap again to stop">🎙️</button><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="voice-options"><label for="voiceLang">🎙️ Language:</label><select id="voiceLang" aria-label="Voice input language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select><button type="button" id="handsFree" class="handsfree-btn" aria-pressed="false" title="Start smart hands-free voice conversation">🎙️ Smart Mic START</button><span id="voiceStatus" role="status" aria-live="polite">🎙️ Smart Mic START dabao → bolo → NEXA bolegi → phir sunegi.</span></div><div class="fineprint">Smart Mic v2: Start → bolo → AI reply → dobara sunne ki koshish. iPhone par browser ke restrictions ki wajah se kabhi Tap to Resume karna padega. Audio Puter ko bheja jata hai; free usage limited hai.</div></div>
   </main>
 </div>
 <script src="https://js.puter.com/v2/"></script>
@@ -116,17 +116,18 @@
   function scheduleNextTurn(epoch){
     if(!handsfree || epoch!==handsfreeEpoch)return;
     smartSpeaking=false;
-    noteVoice('🎧 Aapki baari! Mic dobara sunne ja raha hai…');
+    noteVoice('🎧 Jawab khatam. Mic ko dobara khol raha hoon…');
     if(nextTurnTimer)clearTimeout(nextTurnTimer);
     let attempts=0;
     const continueLoop=()=>{
       if(!handsfree || epoch!==handsfreeEpoch)return;
       if(busy||recording||processingVoice||preparingMic||smartSpeaking){
         if(++attempts<22)nextTurnTimer=setTimeout(continueLoop,450);
-        else stopHandsFree('Mic restart nahi hua. Smart Mic START dobara dabao.');
+        else stopHandsFree('iPhone ne auto mic restart roka. Smart Mic START dabakar resume karo.');
         return;
       }
       nextTurnTimer=null;
+      enableMicrophoneTrack(true);
       toggleMicrophone(true);
     };
     nextTurnTimer=setTimeout(continueLoop,700);
@@ -233,12 +234,9 @@
     if(success){
       scheduleNextTurn(epoch);
     }else if(fallback){
-      // Free/local backup; if iOS blocks automatic speech, show a clear resume option.
-      speak(reply,ok=>{
-        if(!handsfree || epoch!==handsfreeEpoch)return;
-        if(ok)scheduleNextTurn(epoch);
-        else stopHandsFree('iPhone ne voice roki. Smart Mic START dabao.');
-      });
+      // Do not call speechSynthesis while the microphone session is active on iPhone:
+      // WebKit may permanently mute its getUserMedia audio track.
+      stopHandsFree('🔊 Awaaz play nahi hui. Suno dabao; phir Smart Mic START se resume karo.');
     }
   }
   function micAppearance(state){
@@ -250,6 +248,10 @@
   function microphoneFallback(){
     noteVoice('Recording available nahi. Message box mein iPhone keyboard ka 🎙️ use karo.');
     el('prompt').focus();
+  }
+  function enableMicrophoneTrack(enabled){
+    const track=stream?.getAudioTracks?.()[0];
+    if(track && track.readyState==='live')track.enabled=!!enabled;
   }
   function releaseRecorder(force=false){
     if(monitorTimer){clearInterval(monitorTimer);monitorTimer=null;}
@@ -308,6 +310,14 @@
       // Capture real audio instead of Safari's unreliable webkitSpeechRecognition.
       // The audio is sent to Puter for transcription, then text is sent to AI chat.
       const liveTrack=stream?.getAudioTracks?.()[0];
+      if(liveTrack && liveTrack.readyState==='live')liveTrack.enabled=true;
+      if(fromLoop && liveTrack?.muted){
+        // Safari sometimes leaves a live track muted after voice playback.
+        // Reacquiring without a user gesture is not reliable on iPhone.
+        stopHandsFree('iPhone ne microphone mute kar diya. Smart Mic START dabakar resume karo.');
+        micAppearance('idle');
+        return;
+      }
       if(!liveTrack || liveTrack.readyState!=='live' || liveTrack.muted){
         if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
         stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
@@ -325,6 +335,8 @@
         const dropped=discardRecording;
         discardRecording=false;
         releaseRecorder();
+        // Prevent capturing NEXA's own reply while the microphone session remains alive.
+        if(handsfree)enableMicrophoneTrack(false);
         if(dropped){micAppearance('idle');return;}
         if(handsfree && !voiceDetected && Date.now()-recordingStart>14800){
           micAppearance('idle');
@@ -336,8 +348,9 @@
       };
       voiceDetected=false;lastVoice=0;recordingStart=Date.now();
       recorder.start(250);recording=true;
+      if(handsfree)noteVoice(fromLoop?'🎧 Mic phir ON hai. Ab bolo.':'🎧 Smart Mic ON. Ab bolo.');
       micAppearance('recording');
-      noteVoice(handsfree?'🎧 Sun raha hoon… bolo. Chup hone par jawab aayega.':'🎙️ Bolo. Chup hone par auto-send, ya ⏹️ dabao.');
+      noteVoice(handsfree?(fromLoop?'🎧 Mic phir sun raha hai… bolo.':'🎧 Sun raha hoon… bolo.'):'🎙️ Bolo. Chup hone par auto-send, ya ⏹️ dabao.');
       // Silence detection is best-effort; recording will also stop after 15s.
       try{
         if(!soundContext || soundContext.state==='closed'){
@@ -355,7 +368,10 @@
           const samples=new Uint8Array(meter.fftSize);meter.getByteTimeDomainData(samples);
           let sum=0;for(const x of samples){const a=(x-128)/128;sum+=a*a;}
           const rms=Math.sqrt(sum/samples.length);
-          if(rms>0.025){voiceDetected=true;lastVoice=now;}
+          if(rms>0.025){
+            if(!voiceDetected && handsfree)noteVoice('🎧 Awaaz sun raha hoon…');
+            voiceDetected=true;lastVoice=now;
+          }
         }
         if((voiceDetected&&elapsed>1800&&now-lastVoice>1900)||elapsed>15000){stopRecording();}
       },250);
@@ -472,7 +488,7 @@
     if(!('speechSynthesis' in window)){noteVoice('iPhone par voice speaker available nahi hai.');return;}
     unlockAudioFromTap();
     handsfree=true;handsfreeEpoch++;recoveryCount=0;updateHandsFree();
-    noteVoice('🎧 Smart Mic ON. Mic permission Allow karo aur bolo.');
+    noteVoice('🎧 Smart Mic ON. Microphone Allow karo aur bolo.');
     toggleMicrophone(false);
   });
   el('autoVoice').addEventListener('click',()=>{
