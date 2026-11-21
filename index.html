@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NEXA AI">
   <meta name="description" content="NEXA AI — Smart Chat History, Voice AI and Image Studio.">
-  <title>NEXA AI — Aurora · Image Studio · Smart History</title>
+  <title>NEXA AI — Aurora · Image Studio · Smart History Pin Fix</title>
   <link rel="icon" type="image/png" href="./apple-touch-icon.png?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=3">
   <style>
@@ -224,7 +224,7 @@ textarea:focus-visible{outline:0}
 @media (max-width:370px){#imageStudioTop{width:30px;height:32px;font-size:16px}.header-right{gap:5px}.voice-toggle{font-size:9px}.img-studio-header h2{font-size:18px}}
 
 
-/* NEXA AI Smart History v3 — design-only sidebar additions */
+/* NEXA AI Smart History v3.1 — one-tap Pin fix */
 .history-search-wrap{display:flex;align-items:center;gap:9px;margin:16px 3px 10px;padding:11px 13px;border:1px solid rgba(179,146,255,.26);background:rgba(13,12,27,.55);border-radius:13px;color:#ad9bbf}
 .history-search-wrap:focus-within{border-color:#b68cff;box-shadow:0 0 0 3px rgba(151,104,240,.12)}
 #historySearch{min-width:0;flex:1;border:0;outline:none;background:transparent;color:#f6f0ff;font-size:13px}
@@ -244,6 +244,10 @@ textarea:focus-visible{outline:0}
 .history-row .history-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:100%;font-weight:680;font-size:12px;color:#ded9f2}
 .history-row.active .history-title{color:#fff}
 .history-row .history-sub{font-size:10px;color:#8f86a4;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}
+.history-quick-pin{flex:none;min-width:42px;width:42px;height:43px;display:grid;place-items:center;border:1px solid rgba(164,135,223,.22);border-radius:12px;background:rgba(97,75,158,.17);color:#e2d2ff;font-size:23px;touch-action:manipulation}
+.history-quick-pin.active{color:#ffe4a3;background:rgba(156,110,235,.29);border-color:rgba(228,181,255,.55);box-shadow:0 0 15px rgba(153,110,252,.13)}
+.history-quick-pin:focus-visible{outline:2px solid #cfb1ff;outline-offset:2px}
+.history-row .history-item{padding-left:6px}
 .history-more{min-width:33px;height:37px;display:grid;place-items:center;border:1px solid transparent;border-radius:10px;background:transparent;color:#b9a5d6;font-size:21px}
 .history-more:hover,.history-more:focus-visible{background:rgba(157,112,235,.18);border-color:rgba(198,162,255,.25)}
 .history-empty{font-size:12px;color:#a8a0b9;text-align:center;line-height:1.6;padding:35px 12px}
@@ -711,9 +715,14 @@ textarea:focus-visible{outline:0}
       sub.textContent=dateLabel(c.updatedAt)+' · '+total+' '+(total===1?'message':'messages');
       copy.append(name,sub);b.append(symbol,copy);
       b.onclick=()=>{if(handsfree)stopHandsFree();stopSpeaking();active=c.id;persist();render();closeMenu()};
+      const pin=document.createElement('button');pin.type='button';pin.className='history-quick-pin'+(c.pinned?' active':'');
+      pin.textContent=c.pinned?'★':'☆';pin.title=c.pinned?'Unpin chat':'Pin chat';
+      pin.setAttribute('aria-label',(c.pinned?'Unpin ':'Pin ')+c.title);
+      pin.setAttribute('aria-pressed',String(!!c.pinned));
+      pin.onclick=(event)=>{event.preventDefault();event.stopPropagation();updatePin(c.id)};
       const more=document.createElement('button');more.type='button';more.className='history-more';more.textContent='⋯';more.setAttribute('aria-label','Options for '+c.title);
       more.onclick=()=>openHistorySheet(c.id);
-      row.append(b,more);h.appendChild(row);
+      row.append(b,pin,more);h.appendChild(row);
     }
   };
   const closeHistorySheet=()=>{el('historySheetBackdrop').classList.remove('open');sheetChatId=null};
@@ -739,6 +748,21 @@ textarea:focus-visible{outline:0}
     downloadText('NEXA-AI-Chats-Backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(backup,null,2),'application/json;charset=utf-8');
     noticeHistory('✅ Backup downloaded. Save it safely in Files or iCloud Drive.');
   };
+  const updatePin=(id)=>{
+    const c=chats.find(x=>x.id===id);if(!c)return;
+    const wasPinned=!!c.pinned;
+    c.pinned=!wasPinned;
+    if(!persist()){
+      c.pinned=wasPinned;
+      renderHistory();
+      noticeHistory('⚠️ Pin save nahi hua. Pehle Backup chats download kar lo.');
+      return;
+    }
+    historyFilter=c.pinned?'pinned':'all';
+    el('historySearch').value='';
+    renderHistory();
+    noticeHistory(c.pinned?'★ Chat pinned! Pinned tab mein dikh rahi hai.':'☆ Chat unpinned. All chats mein dikh rahi hai.');
+  };
   const makeChange=(fn)=>{fn();persist();renderHistory();};
   el('historySearch').addEventListener('input',renderHistory);
   el('historyAll').onclick=()=>{historyFilter='all';renderHistory()};
@@ -754,8 +778,8 @@ textarea:focus-visible{outline:0}
     makeChange(()=>{c.title=name});closeHistorySheet();
   };
   el('historyPinButton').onclick=()=>{
-    const c=chats.find(x=>x.id===sheetChatId);if(!c)return;
-    makeChange(()=>{c.pinned=!c.pinned});closeHistorySheet();
+    const id=sheetChatId;if(!id)return;
+    closeHistorySheet();updatePin(id);
   };
   el('historyExportOne').onclick=()=>{
     const c=chats.find(x=>x.id===sheetChatId);if(!c)return;exportOne(c);closeHistorySheet();
