@@ -61,7 +61,7 @@
   <main>
     <header><div style="display:flex;align-items:center;gap:12px"><button class="iconbtn" id="menu" aria-label="Open menu">☰</button><div><div class="topname">NEXA AI <span class="mobile-brand" style="display:inline;font-weight:400;font-size:13px;color:#bba4df">✦</span></div><div class="subhead">Your smart assistant · Live AI</div></div></div><button class="voice-toggle" id="autoVoice" type="button" aria-pressed="false" title="Speak AI replies automatically">🔈 Voice OFF</button></header>
     <section id="messages" aria-live="polite" aria-label="Conversation"></section>
-    <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="micbtn" id="voiceMic" type="button" aria-label="Speak your message" title="Talk to NEXA AI">🎙️</button><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="voice-options"><label for="voiceLang">🎙️ Language:</label><select id="voiceLang" aria-label="Voice input language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select><span id="voiceStatus" role="status" aria-live="polite">Tap 🎙️ to speak · tap 🔊 to hear replies</span></div><div class="fineprint">AI needs internet + Puter sign-in. Free allowance is limited. Voice input depends on browser support.</div></div>
+    <div class="composer"><form class="form" id="chatForm"><textarea id="prompt" placeholder="Message NEXA AI..." aria-label="Your message" rows="1"></textarea><button class="micbtn" id="voiceMic" type="button" aria-label="Record voice message" title="Tap, speak, tap again to stop">🎙️</button><button class="send" id="send" type="submit" aria-label="Send message">↑</button></form><div class="voice-options"><label for="voiceLang">🎙️ Language:</label><select id="voiceLang" aria-label="Voice input language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select><span id="voiceStatus" role="status" aria-live="polite">🎙️ Dabao, bolo; chup hone par bhejega. ⏹️ se stop.</span></div><div class="fineprint">AI + voice transcription need internet and Puter sign-in. Recording is sent to Puter. Free allowance is limited.</div></div>
   </main>
 </div>
 <script src="https://js.puter.com/v2/"></script>
@@ -71,8 +71,9 @@
   const KEY='nexa-ai-live-v1';
   const el=id=>document.getElementById(id);
   let chats=[], active=null, busy=false;
-  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let listening=false, recognition=null, voiceTurn=false;
+  let recording=false, preparingMic=false, processingVoice=false;
+  let recorder=null, stream=null, soundContext=null, meter=null, monitorTimer=null;
+  let chunks=[], recordingStart=0, voiceDetected=false, lastVoice=0;
   let autoVoice=false;
   try{autoVoice=localStorage.getItem('nexa-voice-auto')==='1'}catch(_){}
   const noteVoice=message=>{el('voiceStatus').textContent=message};
@@ -101,45 +102,102 @@
       window.speechSynthesis.speak(u);
     }catch(_){noteVoice('Speaker chal nahi paaya. Safari mein try karo.')}
   }
+  function micAppearance(state){
+    const button=el('voiceMic');
+    button.classList.toggle('active',state==='recording');
+    button.textContent=state==='recording'?'⏹️':state==='processing'?'⌛':'🎙️';
+    button.setAttribute('aria-label',state==='recording'?'Stop recording and send':state==='processing'?'Transcribing voice':'Record voice message');
+  }
   function microphoneFallback(){
-    noteVoice('Mic nahi chal raha? Message box dabao, iPhone keyboard par 🎙️ Dictation use karo.');
+    noteVoice('Recording available nahi. Message box mein iPhone keyboard ka 🎙️ use karo.');
     el('prompt').focus();
   }
-  function toggleMicrophone(){
-    stopSpeaking();
-    if(busy){noteVoice('AI ka reply aane ke baad dobara bolo.');return;}
-    if(!SpeechRecognitionAPI){microphoneFallback();return;}
-    if(listening){try{recognition.stop()}catch(_){};return;}
+  function releaseRecorder(){
+    if(monitorTimer){clearInterval(monitorTimer);monitorTimer=null;}
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+    if(soundContext){try{soundContext.close()}catch(_){};soundContext=null;}
+    meter=null;
+  }
+  function stopRecording(){
+    if(!recording)return;
+    recording=false;
+    noteVoice('Awaaz ko text mein badal raha hoon…');
+    micAppearance('processing');
+    try{if(recorder&&recorder.state!=='inactive')recorder.stop();else releaseRecorder()}
+    catch(_){releaseRecorder();micAppearance('idle');noteVoice('Recording ruk gayi. Dobara try karo.');}
+  }
+  async function transcribeRecording(data,mime){
+    processingVoice=true;
+    micAppearance('processing');
     try{
-      const r=new SpeechRecognitionAPI();recognition=r;
-      r.lang=el('voiceLang').value;r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
-      r.onstart=()=>{
-        listening=true;el('voiceMic').classList.add('active');
-        el('voiceMic').setAttribute('aria-label','Stop listening');
-        noteVoice(r.lang==='hi-IN'?'Sun raha hoon… Hindi mein bolo.':'Listening… speak in English.');
+      if(!window.puter?.ai?.speech2txt)throw new Error('Puter speech-to-text load nahi hua.');
+      if(data.size<1200)throw new Error('Awaaz record nahi ho paayi.');
+      const extension=mime.includes('mp4')?'m4a':mime.includes('webm')?'webm':'wav';
+      const file=new File([data],'nexa-voice.'+extension,{type:mime});
+      const response=await window.puter.ai.speech2txt({file});
+      const words=(typeof response==='string'?response:response?.text||'').trim();
+      if(!words)throw new Error('Awaaz samajh nahi aayi.');
+      noteVoice('Suna: '+words.slice(0,70)+' · Ab bhej raha hoon…');
+      el('prompt').value=words;
+      send(words,true);
+    }catch(error){
+      const msg=String(error?.message||'').slice(0,110);
+      console.warn('NEXA voice transcription error',error);
+      noteVoice('Voice send nahi hui. '+msg+' Keyboard ka 🎙️ bhi use kar sakte ho.');
+    }finally{
+      processingVoice=false;
+      micAppearance('idle');
+    }
+  }
+  async function toggleMicrophone(){
+    stopSpeaking();
+    if(recording){stopRecording();return;}
+    if(preparingMic||processingVoice)return;
+    if(busy){noteVoice('Pehle AI ka reply aane do.');return;}
+    if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){microphoneFallback();return;}
+    preparingMic=true;
+    try{
+      // Capture real audio instead of Safari's unreliable webkitSpeechRecognition.
+      // The audio is sent to Puter for transcription, then text is sent to AI chat.
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      chunks=[];
+      const options=['audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+      recorder=new MediaRecorder(stream,options?{mimeType:options}:undefined);
+      const mime=recorder.mimeType||options||'audio/mp4';
+      recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
+      recorder.onerror=e=>{console.warn('NEXA recording error',e);noteVoice('Mic record nahi kar paya, dobara try karo.')};
+      recorder.onstop=()=>{
+        const recorded=new Blob(chunks,{type:mime});
+        releaseRecorder();
+        transcribeRecording(recorded,mime);
       };
-      r.onresult=event=>{
-        let said='';
-        for(let i=event.resultIndex;i<event.results.length;i++) if(event.results[i].isFinal)said+=event.results[i][0].transcript+' ';
-        said=said.trim();
-        if(said){
-          el('prompt').value=said;
-          noteVoice('Suna: '+said.slice(0,70));
-          send(said,true);
+      voiceDetected=false;lastVoice=0;recordingStart=Date.now();
+      recorder.start(250);recording=true;
+      micAppearance('recording');
+      noteVoice('🎙️ Bolo. Chup hone par auto-send, ya ⏹️ dabao.');
+      // Silence detection is best-effort; recording will also stop after 15s.
+      try{
+        soundContext=new (window.AudioContext||window.webkitAudioContext)();
+        soundContext.resume().catch(()=>{});
+        meter=soundContext.createAnalyser();meter.fftSize=2048;
+        const source=soundContext.createMediaStreamSource(stream);source.connect(meter);
+      }catch(_){meter=null;}
+      monitorTimer=setInterval(()=>{
+        if(!recording)return;
+        const now=Date.now();const elapsed=now-recordingStart;
+        if(meter){
+          const samples=new Uint8Array(meter.fftSize);meter.getByteTimeDomainData(samples);
+          let sum=0;for(const x of samples){const a=(x-128)/128;sum+=a*a;}
+          const rms=Math.sqrt(sum/samples.length);
+          if(rms>0.025){voiceDetected=true;lastVoice=now;}
         }
-      };
-      r.onerror=event=>{
-        const error=event.error||'';
-        if(error==='not-allowed'||error==='service-not-allowed')noteVoice('Mic permission allow karo. Safari mein website kholkar try karo.');
-        else if(error==='no-speech')noteVoice('Awaaz nahi suni. 🎙️ dobara try karo.');
-        else noteVoice('Voice input available nahi hai. Keyboard ka 🎙️ use karo.');
-      };
-      r.onend=()=>{
-        listening=false;el('voiceMic').classList.remove('active');
-        el('voiceMic').setAttribute('aria-label','Speak your message');
-      };
-      r.start();
-    }catch(err){listening=false;el('voiceMic').classList.remove('active');microphoneFallback()}
+        if((voiceDetected&&elapsed>1800&&now-lastVoice>1900)||elapsed>15000){stopRecording();}
+      },250);
+    }catch(error){
+      releaseRecorder();recording=false;micAppearance('idle');
+      noteVoice(error?.name==='NotAllowedError'?'Mic permission allow karo (Safari website settings).':'Mic khul nahi paya; keyboard ka 🎙️ use karo.');
+      console.warn('NEXA microphone error',error);
+    }finally{preparingMic=false;}
   }
   try { const saved=JSON.parse(localStorage.getItem(KEY));
     if (Array.isArray(saved)) chats=saved.filter(c=>c&&typeof c.id==='string'&&Array.isArray(c.messages)).slice(0,30);
