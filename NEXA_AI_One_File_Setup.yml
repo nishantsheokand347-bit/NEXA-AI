@@ -1,0 +1,68 @@
+name: NEXA AI - Android PWA Setup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/NEXA_AI_One_File_Setup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  setup-android-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Prepare app from existing ZIP, preserving current NEXA AI
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          archive = Path('NEXA_AI_Android_PWA_Ready.zip')
+          if not archive.is_file():
+              raise SystemExit('ZIP not found in the repository root.')
+
+          assets = ('manifest.webmanifest', 'sw.js', 'apple-touch-icon.png',
+                    'icon-192.png', 'icon-512.png', 'icon-maskable-512.png')
+          with ZipFile(archive) as z:
+              for asset in assets:
+                  matches = [p for p in z.namelist() if p == asset or p.endswith('/' + asset)]
+                  if len(matches) != 1:
+                      raise SystemExit('Missing/ambiguous ZIP asset: ' + asset)
+                  Path(asset).write_bytes(z.read(matches[0]))
+
+          target = Path('index.html')
+          html = target.read_text(encoding='utf-8')
+          if not any(x in html for x in ('rel="manifest"', "rel='manifest'")):
+              html = html.replace('<head>', '<head>\n<link rel="manifest" href="./manifest.webmanifest">', 1)
+          if not any(x in html for x in ('rel="apple-touch-icon"', "rel='apple-touch-icon'")):
+              html = html.replace('</head>', '<link rel="apple-touch-icon" href="./apple-touch-icon.png">\n</head>', 1)
+          if "register('./sw.js')" not in html and 'register("./sw.js")' not in html:
+              service_worker_script = '''<script>
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+              navigator.serviceWorker.register('./sw.js').catch(function (error) {
+                console.warn('NEXA AI service worker error', error);
+              });
+            });
+          }
+          </script>'''
+              html = html.replace('</body>', service_worker_script + '\n</body>', 1)
+          target.write_text(html, encoding='utf-8')
+          print('PWA assets installed without replacing original app logic.')
+          PY
+      - name: Save the PWA setup to main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html manifest.webmanifest sw.js apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Prepare NEXA AI for Android PWA packaging'
+            git push origin HEAD:main
+          fi
