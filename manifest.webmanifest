@@ -1,0 +1,32 @@
+{
+  "name": "NEXA AI — Smart Assistant",
+  "short_name": "NEXA AI",
+  "description": "NEXA AI is a smart AI assistant with chat, voice, image creation, photo questions, thinking mode and chat history.",
+  "id": "/NEXA-AI/",
+  "start_url": "/NEXA-AI/",
+  "scope": "/NEXA-AI/",
+  "display": "standalone",
+  "background_color": "#080911",
+  "theme_color": "#171029",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/NEXA-AI/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/NEXA-AI/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/NEXA-AI/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
